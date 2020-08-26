@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Analizador</string>
+
+    <string name="botonseleccionarimagen">Seleccionar Imagen</string>
+    <string name="botonanalizarimagen">Analizar Imagen</string>
+    <string name="checksubirarchivo">Subir archivo</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>

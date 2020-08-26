@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimaryini">#6200EE</color>
+    <color name="colorPrimaryDarkini">#3700B3</color>
+    <color name="colorAccentini">#03DAC5</color>
+
+    <color name="colorPrimary">#FF9800</color>
+    <color name="colorPrimaryDark">#FF5722</color>
+    <color name="colorAccent">#448AFF</color>
+
+    <!--  controlling the “normal” state of components such as an unselected EditText, Checkbox, and
+RadioButton -->
+    <color name="colorControlNormal">#ffffff</color>
+    <!-- controlling the activated or checked state for Checkboxes and Radio Buttons -->
+    <color name="colorControlActivated">#000000</color>
+    <!--  controlling the ripple coloring -->
+    <!-- In almost all cases kept to the default
+        20% white color (#33ffffff) for dark themes
+        12% black (#1f000000) for light themes-->
+    <color name="colorControlHighlight">#33ffffff</color>
+
+</resources>

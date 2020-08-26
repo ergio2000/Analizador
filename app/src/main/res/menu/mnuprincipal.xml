@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_home"
+        android:title="Home"
+        android:icon="@drawable/ic_action_home"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/action_tomarfoto"
+        android:title="Tomar foto"
+        android:icon="@drawable/ic_action_tomarfoto"
+        app:showAsAction="ifRoom|withText"/>
+    <item
+        android:id="@+id/action_login"
+        android:title="Login"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_ultimasfotos"
+        android:title="Ultimas fotos"
+        android:icon="@drawable/ic_action_ultimasfotos"
+        app:showAsAction="ifRoom|withText"/>
+</menu>
