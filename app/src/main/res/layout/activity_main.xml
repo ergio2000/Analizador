@@ -11,17 +11,16 @@
 
 
     <fragment
-        android:id="@+id/fragment7"
+        android:id="@+id/fragmentohome"
         android:name="pe.pucp.analizador.home"
 
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout="@layout/fragment_home" />
-
 
 
 
