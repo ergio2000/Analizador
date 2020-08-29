@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     //auxiliar para visualizacion de imagen
     private ImageView pictureZone = null;
+    //ruta de imagen local
+    String mRutaLocal="";
 
     //on create
     @Override
@@ -110,7 +112,8 @@ public class MainActivity extends AppCompatActivity {
 
             case PICTURE_TAKEN:
                 if (resultCode == Activity.RESULT_OK) {
-                    takenPictureData = handleResultFromCamera(data);
+                    mRutaLocal = handleResultFromCamera(data);
+                    takenPictureData = BitmapFactory.decodeFile(mRutaLocal);
                 }
                 break;
         }
@@ -132,10 +135,11 @@ public class MainActivity extends AppCompatActivity {
             Bitmap newbitMap = Bitmap.createScaledBitmap(takenPictureData, newWidth, newHeight, true);
             //muestra en la vista
             pictureZone.setImageBitmap(newbitMap);
+            pictureZone.setTag(mRutaLocal);
         }
     }
 
-    private Bitmap handleResultFromCamera(Intent data){
+    private Bitmap handleResultFromCameraini(Intent data){
         Bitmap takenPictureData = null;
         //Log.wtf("handleResultFromCamera","inicio");
 
@@ -160,6 +164,25 @@ public class MainActivity extends AppCompatActivity {
         return takenPictureData;
     }
 
+    private String handleResultFromCamera(Intent data){
+        String mRutaLocal="";
+        //Log.wtf("handleResultFromCamera","inicio");
+
+        if(data==null)
+        {
+            //If we used EXTRA_OUTPUT we do not have the data so we get the image
+            //from the output.
+            try{
+                //takenPictureData = ToolBox.media_getBitmapFromFile(outFile);
+                String na=outFile.getPath();
+                //Log.wtf("na",na);
+                mRutaLocal=na;
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+        return mRutaLocal;
+    }
 
     //utilitario de verificacion de permisos
     private void verificaPermisos()

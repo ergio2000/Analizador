@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 
 import java.io.File;
@@ -31,7 +32,11 @@ public class home extends Fragment {
 
     //auxiliar para visualizacion de imagen
     private ImageView pictureZone = null;
+    //variable que almacena la ruta de la imagen local a visualizar
+    private String mRutaLocal="";
 
+    //auxiliar para determinar si la imagen se almacena en remoto
+    private CheckBox mChk=null;
 
     public home() {
         // Required empty public constructor
@@ -51,7 +56,7 @@ public class home extends Fragment {
         //verifica permisos de camara, y acceso a disco (camara/galeria)
         verificaPermisos();
 
-        //establece listener
+        //establece listener de boton seleccionar galeria
         Button btn_sel_img = root.findViewById(R.id.btnselimg);
         btn_sel_img.setOnClickListener(new Button.OnClickListener()
         {
@@ -60,7 +65,22 @@ public class home extends Fragment {
             }
         });
 
+        //establece referencia a control de imagen
         pictureZone = root.findViewById(R.id.ivimgsel);
+
+        //establece listener de boton analizar
+        Button btn_ana_img = root.findViewById(R.id.btnanaimg);
+        btn_ana_img.setOnClickListener(new Button.OnClickListener()
+        {
+            public void onClick(View v) {
+                analizarImagen();
+            }
+        });
+
+        //obtiene referncia a checkbox
+        mChk = root.findViewById(R.id.chksubarc);
+        //inicializa en true
+        mChk.setChecked(true);
 
         return  root;
     }
@@ -90,12 +110,14 @@ public class home extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
 
         Bitmap takenPictureData = null;
+        String mRutaLocal="";
 
         switch(requestCode){
 
             case PICTURE_TAKEN:
                 if(resultCode==Activity.RESULT_OK) {
-                    takenPictureData = handleResultFromChooser(data);
+                    mRutaLocal = handleResultFromChooser(data);
+                    takenPictureData = BitmapFactory.decodeFile(mRutaLocal);
                 }
                 break;
         }
@@ -118,10 +140,11 @@ public class home extends Fragment {
             Bitmap newbitMap = Bitmap.createScaledBitmap(takenPictureData, newWidth, newHeight, true);
             //muestra en la vista
             pictureZone.setImageBitmap(newbitMap);
+            pictureZone.setTag(mRutaLocal);
         }
     }
 
-    private Bitmap handleResultFromChooser(Intent data){
+    private Bitmap handleResultFromChooserini(Intent data){
         Bitmap takenPictureData = null;
 
         Uri photoUri = data.getData();
@@ -148,6 +171,30 @@ public class home extends Fragment {
         return takenPictureData;
     }
 
+    private String handleResultFromChooser(Intent data){
+        //resultado
+        String mRutaLocal="";
+
+        Uri photoUri = data.getData();
+        if (photoUri != null){
+            try {
+
+                //We get the file path from the media info returned by the content resolver
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getActivity().getApplicationContext().getContentResolver().query(photoUri, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String filePath = cursor.getString(columnIndex);
+                cursor.close();
+                mRutaLocal=filePath;
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+        }
+
+        return mRutaLocal;
+    }
+
     //utilitario de verificacion de permisos
     private void verificaPermisos()
     {
@@ -161,6 +208,27 @@ public class home extends Fragment {
 //endregion
 
 
+//region ANALIZAR IMAGEN
+
+    public void analizarImagen()
+    {
+        //auxiliar para determinar si la imagen se almacena en remoto
+        boolean mAlmacenar=true;
+        mAlmacenar=mChk.isChecked();
+
+        String mRutaLocal="";
+        //obtiene ruta local
+        mRutaLocal=(String)pictureZone.getTag();
+        //Log.wtf("ruta local",mRutaLocal);
+        //abre activity analizar
+        Intent myIntent = new Intent(getActivity(), Analizar.class);
+        myIntent.putExtra("rutalocal", mRutaLocal); //ruta del archivo local
+        myIntent.putExtra("almacenar", mAlmacenar); //opcion de subir a remoto
+        startActivity(myIntent);
+    }
+
+
+//endregion
 
 
 }

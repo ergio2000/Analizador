@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "511270818900",
+    "firebase_url": "https://analizador-er.firebaseio.com",
+    "project_id": "analizador-er",
+    "storage_bucket": "analizador-er.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:511270818900:android:023582d9e497dc21b4c9c1",
+        "android_client_info": {
+          "package_name": "pe.pucp.analizador"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "511270818900-f35l48tm23a78jmk54kbs1u1kd4hrp04.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5DraIYgSaCmD8-cwrcElLyma_U-nEXMw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "511270818900-f35l48tm23a78jmk54kbs1u1kd4hrp04.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
