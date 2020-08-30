@@ -7,4 +7,12 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+
+    <string name="abouttitulo">Tarea 02</string>
+    <string name="aboutcaption">Autor :</string>
+    <string name="aboutnom">Elias Ruiz Gonzalez</string>
+
+    <string name="analizarbtnsel">Seleccionar Imagen</string>
+    <string name="analizarbtnana">Analizar Imagen</string>
+
 </resources>
