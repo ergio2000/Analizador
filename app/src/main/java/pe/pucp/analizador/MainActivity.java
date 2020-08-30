@@ -43,6 +43,9 @@ public class MainActivity extends AppCompatActivity {
     //ruta de imagen local
     String mRutaLocal="";
 
+    private String mLoginUsuario="";
+    private String mLoginEmail="";
+
     //on create
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,10 +81,44 @@ public class MainActivity extends AppCompatActivity {
                 //solicita tomar foto
                 startCamera();
                 return true;
+            case(R.id.action_about):
+                //acerca de
+                acercaDe();
+                return true;
+            case(R.id.action_login):
+                //acerca de
+                login();
+                return true;
                 // Pass on any unhandled Menu Items to super.onOptionsItemSelected
                 // This is required to ensure that the up button and Fragment Menu Items
                 // are dispatched properly.
             default: return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //acerca de
+    private void acercaDe()
+    {
+        try{
+            Intent myIntent = new Intent(this, AboutActivity.class);
+            startActivity(myIntent);
+
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    //login
+    private void login()
+    {
+        try{
+            Intent myIntent = new Intent(this, LoginActivity.class);
+            //startActivity(myIntent);
+
+        }catch (Exception e)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -195,4 +232,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 //endregion
+
+    public void setLoginUsuario(String pU){mLoginUsuario=pU;  }
+    public void setLoginEmail(String pE){mLoginEmail=pE;  }
 }
