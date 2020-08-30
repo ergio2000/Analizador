@@ -12,8 +12,6 @@ public class Analizar extends AppCompatActivity {
 
     //propiedades
     private String mRutaLocal="";
-    private boolean mAlmacenar=true;
-
 
     //constructor
 
@@ -30,7 +28,6 @@ public class Analizar extends AppCompatActivity {
         Intent intent = getIntent ();
         Bundle extras = intent.getExtras();
         mRutaLocal=extras.getString("rutalocal");
-        mAlmacenar=extras.getBoolean("almacenar");
         //Log.wtf("Analizar activity mRutaLocal",mRutaLocal);
     }
 
@@ -39,6 +36,5 @@ public class Analizar extends AppCompatActivity {
 
     //AUXILIAR DE ACCESO A VARIABLE POR FRAGMENTOS HIJOS
     public String getRutaLocal(){return mRutaLocal;}
-    public Boolean getAlmacenar(){return mAlmacenar;}
 
 }

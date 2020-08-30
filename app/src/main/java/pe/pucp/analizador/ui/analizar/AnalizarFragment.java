@@ -3,12 +3,15 @@ package pe.pucp.analizador.ui.analizar;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.JsonReader;
+import android.util.JsonToken;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,23 +27,35 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.json.JSONObject;
+
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import pe.pucp.analizador.Analizar;
+import pe.pucp.analizador.CaraModel;
+import pe.pucp.analizador.ObjetoModel;
 import pe.pucp.analizador.R;
+import pe.pucp.analizador.imagenModel;
 
 public class AnalizarFragment extends Fragment {
 
-    private boolean mAlmacenar=true;
-    //ruta local de imagen
-    String mRutaLocal="";
-    //ruta rmota de imagen
-    String mRutaRemota="";
+    //variable que almacena resultados
+    public imagenModel mImgMod;
 
     ProgressBar progressBar;
     TextView txtprogressBar;
 
     private AnalizarViewModel mViewModel;
+
+
 
     //almacenamiento
     private StorageReference mStorageRef;
@@ -57,11 +72,16 @@ public class AnalizarFragment extends Fragment {
 
         //Log.wtf("fragment analizar","ini");
 
+        //crea objeto
+        mImgMod=new imagenModel();
+
+
         //recibe parametros
         Analizar miactividad = (Analizar) getActivity();
-        mRutaLocal=miactividad.getRutaLocal();
-        mAlmacenar=miactividad.getAlmacenar();
+        mImgMod.RutaLocal=miactividad.getRutaLocal();
         //Log.wtf("fragment analizar mRutaLocal",mRutaLocal);
+
+
 
         progressBar = root.findViewById(R.id.progress_bar);
         txtprogressBar = root.findViewById(R.id.progressBarinsideText);
@@ -70,11 +90,14 @@ public class AnalizarFragment extends Fragment {
         //crea referencia a almacenamiento
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
-        //solicita almacenamiento de imagen
-        if(mAlmacenar==true)
-        {
-            almacenarImagen(mRutaLocal);
-        }
+        //analisis de informacion
+        //1 solicita almacenamiento de imagen -20%
+        //2 solicita analisis de imagen       -40%
+        //3 solicita deteccion de rostros     -60%
+        //consolidacion de informacion        -80%
+        //almacenamiento en base de datos     -100%
+        //mostrar resultado
+        almacenarImagen(mImgMod);
 
         return root;
     }
@@ -86,26 +109,26 @@ public class AnalizarFragment extends Fragment {
         // TODO: Use the ViewModel
     }
 
-private void almacenarImagen(String pRutaLocal)
+    //1 almacena informacion
+    private void almacenarImagen(final imagenModel pImgMod)
     {
         //accede al archivo en disco
-        File filelocal= new File(pRutaLocal);
+        File filelocal= new File(pImgMod.RutaLocal);
         Uri file= Uri.fromFile( filelocal );
 
-        Log.wtf("almacenarImagen rutalocal",pRutaLocal);
+        Log.wtf("almacenarImagen rutalocal",pImgMod.RutaLocal);
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setMax(100);
         progressBar.setProgress(0);
         txtprogressBar.setText("subiendo imagen");
 
-
+        //inicializa ruta remota
+        pImgMod.RutaRemota="";
 
         try
         {
-            //Log.wtf("almacenarImagen etapa","1");
             //crea referencia del archivo local, en el almacenamiento remoto
             StorageReference riversRef = mStorageRef.child("images/"+filelocal.getName());
-            //Log.wtf("almacenarImagen etapa","2");
             //sube archivo local en el almacenamiento remoto
             riversRef.putFile(file)
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -123,14 +146,16 @@ private void almacenarImagen(String pRutaLocal)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            Log.wtf("almacenarImagen etapa","3");
                             progressBar.setProgress(100);
                             txtprogressBar.setText("imagen subida");
 
                             Task<Uri> downUrl=taskSnapshot.getMetadata().getReference().getDownloadUrl();
                             while(!downUrl.isComplete());
-                            Log.i("url:",downUrl.getResult().toString());
-
+                            //almacena ruta remota
+                            pImgMod.RutaRemota= downUrl.getResult().toString();
+                            Log.i("mRutaRemota:",pImgMod.RutaRemota);
+                            //2 solicita analisis de imagen
+                            analizaImagen(pImgMod);
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -138,14 +163,482 @@ private void almacenarImagen(String pRutaLocal)
                         public void onFailure(@NonNull Exception e) {
                             // Handle unsuccessful uploads
                             // ...
-                            Log.wtf("almacenarImagen etapa","4");
                             e.printStackTrace();
                         }
                     });
         }
         catch (Exception e){e.printStackTrace();}
 
-        Log.wtf("almacenarImagen etapa","5");
+    }
+
+    //2 solicita analisis de imagen
+    private void analizaImagen(final imagenModel pImgMod)
+    {
+        progressBar.setProgress(20);
+        txtprogressBar.setText("analizando imagen");
+
+        //crea tarea asincrona para manejo de consulta a servicio web REST
+        AsyncTask.execute(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                // All your networking logic
+                // should be here
+                String texto="";
+                int caras=0;
+
+                try {
+                    // Create URL
+                    String mUrlAnaliza="https://southcentralus.api.cognitive.microsoft.com/vision/v3.0/analyze?visualFeatures=Faces,Description,Objects&language=es";
+                    URL azureAnalizaEndpoint = new URL(mUrlAnaliza);
+                    // Create connection
+                    HttpsURLConnection myConnection = (HttpsURLConnection) azureAnalizaEndpoint.openConnection();
+                    //establece metodo a post
+                    myConnection.setRequestMethod("POST");
+
+                    //añade request headers
+                    myConnection.setRequestProperty("Host", "southcentralus.api.cognitive.microsoft.com");
+                    myConnection.setRequestProperty("Content-Type","application/json; utf-8");
+                    myConnection.setRequestProperty("Ocp-Apim-Subscription-Key","1663ca29d10548409234be26cc61940a");
+                    //solicita que respuesta sea json
+                    myConnection.setRequestProperty("Accept", "application/json");
+
+
+                    //habilita escritura
+                    myConnection.setDoOutput(true);
+
+                    // Write the data
+                    String jsonInputString = "{\"url\":\""+ pImgMod.RutaRemota+"\" }";
+                    try(OutputStream os = myConnection.getOutputStream())
+                    {
+                        byte[] input = jsonInputString.getBytes("utf-8");
+                        os.write(input, 0, input.length);
+                    }
+                    //lee respuestas
+                    if (myConnection.getResponseCode() == 200) {
+                        // Success
+                        // Further processing here
+                        progressBar.setProgress(25);
+
+                        //lee respuesta en forma binaria
+                        InputStream responseBody = myConnection.getInputStream();
+                        //formatea respuesta en formato texto utf-8, usual de REST
+                        InputStreamReader responseBodyReader =
+                                new InputStreamReader(responseBody, "UTF-8");
+                        //formatea respuesta en formato json
+
+                        JsonReader jsonReader = new JsonReader(responseBodyReader);
+                        Log.wtf("nivel=","response");
+                        //obtiene un elemento del json recibido
+                        jsonReader.beginObject(); // Start processing the JSON object
+                        while (jsonReader.hasNext()) { // Loop through all keys
+                            String key = jsonReader.nextName(); // Fetch the next key
+                            Log.wtf("nivel=","key " + key);
+                            if(key.equals("description"))
+                            {
+                                jsonReader.beginObject();
+                                while(jsonReader.hasNext())
+                                {
+                                    String key1 = jsonReader.nextName(); // Fetch the next key
+                                    Log.wtf("nivel=","key1 " + key1);
+                                    if(key1.equals("captions"))
+                                    {
+                                        jsonReader.beginArray();
+                                        while (jsonReader.hasNext())
+                                        {
+                                            jsonReader.beginObject();
+                                            while (jsonReader.hasNext())
+                                            {
+                                                String key2 = jsonReader.nextName(); // Fetch the next key
+                                                Log.wtf("array key ",key2);
+                                                if(key2.equals("text"))
+                                                {
+                                                    String texto1=jsonReader.nextString();
+                                                    //Log.wtf("texto1=",texto1);
+                                                    texto = texto + texto1;
+                                                }
+                                                else
+                                                    {
+                                                        jsonReader.skipValue();
+                                                    }
+                                            }
+                                            jsonReader.endObject();
+                                        }
+                                        jsonReader.endArray();
+                                    }
+                                    else
+                                        {
+                                            jsonReader.skipValue();
+                                        }
+                                }
+                                jsonReader.endObject();
+                            }
+                            else if(key.equals("faces"))
+                            {
+                                int f=0;
+                                jsonReader.beginArray();
+                                while (jsonReader.hasNext())
+                                {
+                                    f=f+1;
+                                    jsonReader.skipValue();
+                                }
+                                jsonReader.endArray();
+                                caras=f;
+                            }
+                            else if(key.equals("objects"))
+                            {
+                                int f=0;
+                                jsonReader.beginArray();
+                                while (jsonReader.hasNext())
+                                {
+                                    f=f+1;
+                                    ObjetoModel mObjMod= new ObjetoModel("");
+
+                                    jsonReader.beginObject();
+                                    while (jsonReader.hasNext())
+                                    {
+                                        String key1=jsonReader.nextName();
+                                        Log.wtf("objects key:",key1);
+
+                                        switch (key1)
+                                        {
+                                            case"rectangle":
+                                                jsonReader.beginObject();
+                                                while (jsonReader.hasNext())
+                                                {
+                                                    String key2 = jsonReader.nextName();
+                                                    Log.wtf("objecto rectangle ",key2);
+                                                    //lee valor
+                                                    int v = jsonReader.nextInt();
+                                                    Log.wtf("objecto rectangle pos",String.valueOf(v));
+                                                    //asigna valor
+                                                    switch (key2)
+                                                    {
+                                                        case "y":
+                                                            mObjMod.top=v;
+                                                            break;
+                                                        case "x":
+                                                            mObjMod.left=v;
+                                                            break;
+                                                        case "w":
+                                                            mObjMod.width=v;
+                                                            break;
+                                                        case "h":
+                                                            mObjMod.height=v;
+                                                            break;
+                                                    }
+                                                }
+                                                jsonReader.endObject();
+                                                break;
+                                            case"object":
+                                                mObjMod.name=jsonReader.nextString();
+                                                break;
+                                            default:
+                                                jsonReader.skipValue();
+                                        }
+
+                                    }
+
+                                    jsonReader.endObject();
+
+                                    pImgMod.Objetos.add(mObjMod);
+                                }
+                                jsonReader.endArray();
+
+                                pImgMod.numObjetos=f;
+                            }
+                            else
+                                {
+                                    jsonReader.skipValue();
+                                }
+                        }
+                        jsonReader.endObject();
+                        //cierra json reader
+                        jsonReader.close();
+                        //cierra conexion a servicio web
+                        myConnection.disconnect();
+
+
+                    } else {
+                        // Error handling code goes here
+                        Log.e("error response code:", String.valueOf( myConnection.getResponseCode() ) );
+                    }
+
+                    Log.wtf("texto=",texto);
+                    Log.wtf("caras=",String.valueOf(caras) );
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                //devuelve valores
+                pImgMod.numCaras=caras;
+                pImgMod.Descripcion=texto;
+
+                //siguiente etapa
+                rostrosImagen(pImgMod);
+
+            }
+        });
+
+
+    }
+
+    //3 solicita deteccion de rostros
+    private void rostrosImagen(final imagenModel pImgMod)
+    {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setProgress(40);
+                txtprogressBar.setText("detectando rostros");
+            }
+        });
+
+        Log.wtf("rostros imagen",String.valueOf(pImgMod.numCaras) );
+
+        //procesa si se detectaron caras
+        if(pImgMod.numCaras>0)
+        {
+
+            //crea tarea asincrona para manejo de consulta a servicio web REST
+            AsyncTask.execute(new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    // All your networking logic
+                    // should be here
+
+                    try {
+                        // Create URL
+                        String mUrlAnaliza="https://southcentralus.api.cognitive.microsoft.com/face/v1.0/detect?returnFaceId=true&returnFaceLandmarks=false&returnFaceAttributes=age,gender,smile,glasses,emotion&recognitionModel=recognition_03&returnRecognitionModel=false&detectionModel=detection_01";
+                        URL azureAnalizaEndpoint = new URL(mUrlAnaliza);
+                        // Create connection
+                        HttpsURLConnection myConnection = (HttpsURLConnection) azureAnalizaEndpoint.openConnection();
+                        //establece metodo a post
+                        myConnection.setRequestMethod("POST");
+
+                        //añade request headers
+                        myConnection.setRequestProperty("Host", "southcentralus.api.cognitive.microsoft.com");
+                        myConnection.setRequestProperty("Content-Type","application/json; utf-8");
+                        myConnection.setRequestProperty("Ocp-Apim-Subscription-Key","ae0a78a5c59b44138e23ac5f8d29e7d6");
+                        //solicita que respuesta sea json
+                        myConnection.setRequestProperty("Accept", "application/json");
+
+
+                        //habilita escritura
+                        myConnection.setDoOutput(true);
+
+                        // Write the data
+                        String jsonInputString = "{\"url\":\""+ pImgMod.RutaRemota+"\" }";
+                        try(OutputStream os = myConnection.getOutputStream())
+                        {
+                            byte[] input = jsonInputString.getBytes("utf-8");
+                            os.write(input, 0, input.length);
+                        }
+                        //lee respuestas
+                        if (myConnection.getResponseCode() == 200) {
+                            // Success
+                            // Further processing here
+                            progressBar.setProgress(25);
+
+                            //lee respuesta en forma binaria
+                            InputStream responseBody = myConnection.getInputStream();
+                            //formatea respuesta en formato texto utf-8, usual de REST
+                            InputStreamReader responseBodyReader =
+                                    new InputStreamReader(responseBody, "UTF-8");
+                            //formatea respuesta en formato json
+
+                            JsonReader jsonReader = new JsonReader(responseBodyReader);
+                            Log.wtf("nivel=","response");
+                            //obtiene un elemento del json recibido
+                            jsonReader.beginArray(); // Start processing the JSON object
+                            while (jsonReader.hasNext()) { // Loop through all objects
+                                //crea objeto
+                                CaraModel mCarMod = new CaraModel( 0,"");
+
+                                jsonReader.beginObject();
+                                while (jsonReader.hasNext())
+                                {
+                                    String key = jsonReader.nextName();
+                                    Log.wtf("cara",key);
+                                    if(key.equals("faceRectangle"))
+                                    {
+                                        jsonReader.beginObject();
+                                        while (jsonReader.hasNext())
+                                        {
+                                            String key1 = jsonReader.nextName();
+                                            Log.wtf("cara rectangle ",key1);
+                                            //lee valor
+                                            int v = jsonReader.nextInt();
+                                            //asigna valor
+                                            switch (key1)
+                                            {
+                                                case "top":
+                                                    mCarMod.top=v;
+                                                    break;
+                                                case "left":
+                                                    mCarMod.left=v;
+                                                    break;
+                                                case "width":
+                                                    mCarMod.width=v;
+                                                    break;
+                                                case "height":
+                                                    mCarMod.height=v;
+                                                    break;
+                                            }
+                                        }
+                                        jsonReader.endObject();
+                                    }
+                                    else if(key.equals("faceAttributes"))
+                                    {
+                                        double d;
+                                        double d1;
+                                        jsonReader.beginObject();
+                                        while (jsonReader.hasNext())
+                                        {
+                                            String key1 = jsonReader.nextName();
+                                            Log.wtf("cara atributes ",key1);
+
+                                            //asigna valor
+                                            switch (key1)
+                                            {
+                                                case "smile":
+                                                    d=jsonReader.nextDouble();
+                                                    mCarMod.smile="NO";
+                                                    if(d>=0.80){mCarMod.smile="SI";}
+                                                    break;
+                                                case "glasses":
+                                                    mCarMod.glasses=jsonReader.nextString();
+                                                    break;
+                                                case "emotion":
+                                                    mCarMod.emotion="";
+                                                    d=0;
+                                                    jsonReader.beginObject();
+                                                    while (jsonReader.hasNext())
+                                                    {
+                                                        String key2=jsonReader.nextName();
+                                                        Log.wtf("cara atributes emotion",key2);
+
+                                                        d1=jsonReader.nextDouble();
+                                                        //evalua maximo
+                                                        if(d1>=d)
+                                                        {
+                                                            d=d1;
+                                                            mCarMod.emotion=key2;
+                                                        }
+                                                    }
+                                                    jsonReader.endObject();
+                                                    break;
+                                                case "age":
+                                                    mCarMod.age=jsonReader.nextDouble();
+                                                    break;
+                                                case "gender":
+                                                    mCarMod.gender=jsonReader.nextString();
+                                                    break;
+                                                default:
+                                                    jsonReader.skipValue();
+                                                    break;
+                                            }
+                                        }
+                                        jsonReader.endObject();
+                                    }
+                                    else
+                                    {
+                                        jsonReader.skipValue();
+                                    }
+
+                                }
+                                jsonReader.endObject();
+
+                                //adiciona a resultado
+                                pImgMod.Caras.add(mCarMod);
+                            }
+                            jsonReader.endArray();
+                            //cierra json reader
+                            jsonReader.close();
+                            //cierra conexion a servicio web
+                            myConnection.disconnect();
+
+
+                        } else {
+                            // Error handling code goes here
+                            Log.e("error response code:", String.valueOf( myConnection.getResponseCode() ) );
+                        }
+
+
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+
+                    //siguiente etapa
+                    consolidaInformacion(pImgMod);
+                }
+            });
+
+        }
+
+
+    }
+
+    //consolidacion de informacion
+    private void consolidaInformacion(final imagenModel pImgMod)
+    {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setProgress(60);
+                txtprogressBar.setText("consolidando informacion");
+            }
+        });
+
+        //con el nuevo modelo de datos la informacion ya esta consolidada
+
+        Log.wtf("consolida informacion","1");
+
+        //siguiente etapa
+        almacenaInformación(pImgMod);
+    }
+
+    //almacenamiento en base de datos
+    private void almacenaInformación(final imagenModel pImgMod)
+    {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setProgress(80);
+                txtprogressBar.setText("almacenando informacion");
+            }
+        });
+
+
+        Log.wtf("almacena informacion","1");
+
+        
+
+
+        //siguiente etapa
+        mostrarResultado(pImgMod);
+    }
+
+    //mostrar resultado
+    private void mostrarResultado(final imagenModel pImgMod)
+    {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                progressBar.setProgress(100);
+                txtprogressBar.setText("resultados");
+            }
+        });
+
+
+        Log.wtf("mostrando resultado","1");
+        Log.wtf("resultado = ",pImgMod.toString());
     }
 
 }

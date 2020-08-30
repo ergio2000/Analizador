@@ -35,9 +35,6 @@ public class home extends Fragment {
     //variable que almacena la ruta de la imagen local a visualizar
     private String mRutaLocal="";
 
-    //auxiliar para determinar si la imagen se almacena en remoto
-    private CheckBox mChk=null;
-
     public home() {
         // Required empty public constructor
     }
@@ -76,11 +73,6 @@ public class home extends Fragment {
                 analizarImagen();
             }
         });
-
-        //obtiene referncia a checkbox
-        mChk = root.findViewById(R.id.chksubarc);
-        //inicializa en true
-        mChk.setChecked(true);
 
         return  root;
     }
@@ -212,10 +204,6 @@ public class home extends Fragment {
 
     public void analizarImagen()
     {
-        //auxiliar para determinar si la imagen se almacena en remoto
-        boolean mAlmacenar=true;
-        mAlmacenar=mChk.isChecked();
-
         String mRutaLocal="";
         //obtiene ruta local
         mRutaLocal=(String)pictureZone.getTag();
@@ -223,7 +211,6 @@ public class home extends Fragment {
         //abre activity analizar
         Intent myIntent = new Intent(getActivity(), Analizar.class);
         myIntent.putExtra("rutalocal", mRutaLocal); //ruta del archivo local
-        myIntent.putExtra("almacenar", mAlmacenar); //opcion de subir a remoto
         startActivity(myIntent);
     }
 
