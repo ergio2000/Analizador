@@ -30,7 +30,7 @@ public class ObjetoModel {
     public String toString()
     {
         String mr="";
-        mr=  name + ":(" + String.valueOf(left) + "," + String.valueOf(top) + ")" + " - " + "(" + String.valueOf(width) + "," + String.valueOf(height) + ")";
+        mr=  "Nombre:" + name ;
 
         return  mr;
     }

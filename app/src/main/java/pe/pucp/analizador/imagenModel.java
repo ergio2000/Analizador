@@ -2,9 +2,11 @@ package pe.pucp.analizador;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class imagenModel {
     //propiedades
+    public String Nombre; //uuid
     public String RutaLocal;
     public String RutaRemota;
 
@@ -19,6 +21,7 @@ public class imagenModel {
     //constructor
     public imagenModel()
     {
+        Nombre= UUID.randomUUID().toString();
         RutaLocal="";
         RutaRemota="";
         numCaras=0;
@@ -31,7 +34,9 @@ public class imagenModel {
     //metodos
     public String toString()
     {
-        String mr="desc:"+ Descripcion + " - caras:"+String.valueOf(numCaras)+Caras.toString() + " - objetos:" + String.valueOf(numObjetos) +  Objetos.toString();
+        //String mr="Nombre:" + Nombre + " - desc:"+ Descripcion + " - caras:"+String.valueOf(numCaras)+Caras.toString() + " - objetos:" + String.valueOf(numObjetos) +  Objetos.toString();
+        String mr="Descripcion:"+ Descripcion + " - caras:"+String.valueOf(numCaras)+Caras.toString() + " - objetos:" + String.valueOf(numObjetos) +  Objetos.toString();
         return mr;
     }
+
 }

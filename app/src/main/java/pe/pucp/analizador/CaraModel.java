@@ -41,7 +41,8 @@ public class CaraModel {
     public String toString()
     {
         String mr="";
-        mr= "edad:"+String.valueOf(age) + "-genero:" + gender + "-sge("+smile+"-"+glasses+"-"+emotion+")" + ":(" + String.valueOf(left) + "," + String.valueOf(top) + ")" + " - " + "(" + String.valueOf(width) + "," + String.valueOf(height) + ")";
+        //mr= "edad:"+String.valueOf(age) + "-genero:" + gender + "-sge("+smile+"-"+glasses+"-"+emotion+")" + ":(" + String.valueOf(left) + "," + String.valueOf(top) + ")" + " - " + "(" + String.valueOf(width) + "," + String.valueOf(height) + ")";
+        mr= "edad:"+String.valueOf(age) + "-genero:" + gender + "-sge("+smile+"-"+glasses+"-"+emotion+")";
 
         return  mr;
     }

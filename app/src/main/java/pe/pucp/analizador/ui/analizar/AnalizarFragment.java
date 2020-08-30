@@ -2,6 +2,8 @@ package pe.pucp.analizador.ui.analizar;
 
 import androidx.lifecycle.ViewModelProviders;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -16,12 +18,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -52,6 +57,8 @@ public class AnalizarFragment extends Fragment {
 
     ProgressBar progressBar;
     TextView txtprogressBar;
+    TextView txtresultado;
+    ImageView img_foto;
 
     private AnalizarViewModel mViewModel;
 
@@ -59,6 +66,9 @@ public class AnalizarFragment extends Fragment {
 
     //almacenamiento
     private StorageReference mStorageRef;
+
+    //database
+    DatabaseReference databaseReference;
 
     public static AnalizarFragment newInstance() {
         return new AnalizarFragment();
@@ -85,10 +95,17 @@ public class AnalizarFragment extends Fragment {
 
         progressBar = root.findViewById(R.id.progress_bar);
         txtprogressBar = root.findViewById(R.id.progressBarinsideText);
+        txtresultado = root.findViewById(R.id.txt_resultado);
+        img_foto = root.findViewById(R.id.img_foto);
 
+        //limpia resultado
+        txtresultado.setText("");
 
         //crea referencia a almacenamiento
         mStorageRef = FirebaseStorage.getInstance().getReference();
+
+        //referencia a database
+        databaseReference = FirebaseDatabase.getInstance().getReference("imagenes");
 
         //analisis de informacion
         //1 solicita almacenamiento de imagen -20%
@@ -507,8 +524,8 @@ public class AnalizarFragment extends Fragment {
                                             {
                                                 case "smile":
                                                     d=jsonReader.nextDouble();
-                                                    mCarMod.smile="NO";
-                                                    if(d>=0.80){mCarMod.smile="SI";}
+                                                    mCarMod.smile="No sonrie";
+                                                    if(d>=0.80){mCarMod.smile="Sonrie";}
                                                     break;
                                                 case "glasses":
                                                     mCarMod.glasses=jsonReader.nextString();
@@ -581,6 +598,11 @@ public class AnalizarFragment extends Fragment {
             });
 
         }
+        else
+        {
+            //siguiente etapa
+            consolidaInformacion(pImgMod);
+        }
 
 
     }
@@ -618,7 +640,8 @@ public class AnalizarFragment extends Fragment {
 
         Log.wtf("almacena informacion","1");
 
-        
+        //almacena
+        databaseReference.child(pImgMod.Nombre).setValue(pImgMod);
 
 
         //siguiente etapa
@@ -633,6 +656,29 @@ public class AnalizarFragment extends Fragment {
             public void run() {
                 progressBar.setProgress(100);
                 txtprogressBar.setText("resultados");
+
+                Bitmap mImg = BitmapFactory.decodeFile(pImgMod.RutaLocal);
+                //And show the result in the image view.
+                if(mImg!=null){
+
+                    //adecua tamaño de imagen seleccionada a vista
+                    //datos de imagen original
+                    int currentBitmapWidth = mImg.getWidth();
+                    int currentBitmapHeight = mImg.getHeight();
+                    //datos de vista
+                    int ivWidth = img_foto.getWidth();
+                    int ivHeight = img_foto.getHeight();
+                    //String msg=" ("+String.valueOf(currentBitmapWidth)+","+String.valueOf(currentBitmapHeight)+")   ,    ("+String.valueOf(ivWidth)+","+String.valueOf(ivHeight)+")";
+                    //Log.wtf("imagenorigendestino",msg);
+                    //escalamiento
+                    int newWidth = ivWidth;
+                    int newHeight = (int) Math.floor((double) currentBitmapHeight *( (double) newWidth / (double) currentBitmapWidth));
+                    Bitmap newbitMap = Bitmap.createScaledBitmap(mImg, newWidth, newHeight, true);
+                    //muestra en la vista
+                    img_foto.setImageBitmap(newbitMap);
+                }
+
+                txtresultado.setText( pImgMod.toString()  );
             }
         });
 
