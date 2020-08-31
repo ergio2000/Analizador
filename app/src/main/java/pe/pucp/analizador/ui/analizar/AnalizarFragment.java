@@ -619,6 +619,11 @@ public class AnalizarFragment extends Fragment {
         });
 
         //con el nuevo modelo de datos la informacion ya esta consolidada
+        //calcula nombre de archivo local
+        String s= pImgMod.RutaLocal;
+        File f = new File(s);
+        s=f.getName();
+        pImgMod.Archivo=s;
 
         Log.wtf("consolida informacion","1");
 

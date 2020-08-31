@@ -17,6 +17,18 @@ public class CaraModel {
 
 
     //constructor
+    public CaraModel()
+    {
+        age=0;
+        gender="";
+
+        smile="";
+        glasses="";
+        emotion="";
+
+        setRectangle(0,0,0,0);
+    }
+
     public CaraModel(double pAge, String pGender)
     {
         age=pAge;
@@ -46,4 +58,14 @@ public class CaraModel {
 
         return  mr;
     }
+
+    public String Elementos()
+    {
+        String mr="";
+        mr= "(" + String.valueOf(age) + " años, " + gender + ", "+smile+", "+glasses+", "+emotion+")";
+
+        return  mr;
+    }
+
 }
+

@@ -8,11 +8,26 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import pe.pucp.analizador.R;
+import pe.pucp.analizador.imagenModel;
 import pe.pucp.analizador.ultimas.dummy.DummyContent;
 
 /**
@@ -59,13 +74,46 @@ public class imagenModelFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            final RecyclerView recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(DummyContent.ITEMS));
+
+            //lista de base de datos
+            final List<imagenModel> list = new ArrayList<imagenModel>();
+
+            //obtiene lista de imagenes
+            final FirebaseDatabase database = FirebaseDatabase.getInstance();
+            final DatabaseReference myRef = database.getReference( getString(R.string.firebaseRTDB_name));
+            myRef.limitToLast(20).addListenerForSingleValueEvent(
+                    new ValueEventListener()
+                    {
+                        @Override
+                        public void onDataChange(DataSnapshot snapshot) {
+                            //Log.wtf("listener :",snapshot.getValue().toString());
+                            //System.out.println(snapshot.getValue());
+
+                            try{
+                                for (DataSnapshot child: snapshot.getChildren()) {
+                                    list.add(child.getValue(imagenModel.class));
+                                }
+                                Log.wtf("lista1: ",list.toString() );
+                            }catch (Exception e){e.printStackTrace();}
+
+                            //establece adaptador
+                            Log.wtf("lista2: ",list.toString() );
+                            //recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(DummyContent.ITEMS));
+                            recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(list));
+
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {}
+                    }
+            );
+
         }
         return view;
     }

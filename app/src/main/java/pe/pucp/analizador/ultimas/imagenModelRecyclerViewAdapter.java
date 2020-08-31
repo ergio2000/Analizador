@@ -5,9 +5,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+
 import pe.pucp.analizador.R;
+import pe.pucp.analizador.imagenModel;
 import pe.pucp.analizador.ultimas.dummy.DummyContent.DummyItem;
 
 import java.util.List;
@@ -18,9 +22,11 @@ import java.util.List;
  */
 public class imagenModelRecyclerViewAdapter extends RecyclerView.Adapter<imagenModelRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    //private final List<DummyItem> mValues;
+    private final List<imagenModel> mValues;
 
-    public imagenModelRecyclerViewAdapter(List<DummyItem> items) {
+    //public imagenModelRecyclerViewAdapter(List<DummyItem> items) {
+    public imagenModelRecyclerViewAdapter(List<imagenModel> items) {
         mValues = items;
     }
 
@@ -34,8 +40,18 @@ public class imagenModelRecyclerViewAdapter extends RecyclerView.Adapter<imagenM
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        //holder.mIdView.setText(mValues.get(position).id);
+        holder.mIdView.setText(mValues.get(position).Archivo);
+        //holder.mContentView.setText(mValues.get(position).content);
+        holder.mContentView.setText(mValues.get(position).Descripcion);
+        holder.mElementosView.setText(mValues.get(position).Elementos());
+
+        //imagen
+
+        Glide.with(holder.image.getContext())
+                .load( holder.mItem.RutaRemota )
+                .error(R.drawable.ic_action_ultimasfotos)
+                .into( holder.image);
     }
 
     @Override
@@ -47,13 +63,21 @@ public class imagenModelRecyclerViewAdapter extends RecyclerView.Adapter<imagenM
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        public DummyItem mItem;
+        public final TextView mElementosView;
+
+        public ImageView image;//imagen
+
+        //public DummyItem mItem;
+        public imagenModel mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
             mIdView = (TextView) view.findViewById(R.id.item_number);
             mContentView = (TextView) view.findViewById(R.id.content);
+            mElementosView = (TextView) view.findViewById(R.id.elementos);
+            image = (ImageView) view.findViewById(R.id.imagen_foto);
+
         }
 
         @Override

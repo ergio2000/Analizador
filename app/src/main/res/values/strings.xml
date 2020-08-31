@@ -15,4 +15,8 @@
     <string name="analizarbtnsel">Seleccionar Imagen</string>
     <string name="analizarbtnana">Analizar Imagen</string>
 
+
+    <string name="firebaseRTDB_name">imagenes</string>
+
+
 </resources>

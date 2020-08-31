@@ -11,6 +11,12 @@ public class ObjetoModel {
 
 
     //constructor
+    public ObjetoModel()
+    {
+        name="";
+        setRectangle(0,0,0,0);
+    }
+
     public ObjetoModel(String pName)
     {
         name=pName;
@@ -34,4 +40,13 @@ public class ObjetoModel {
 
         return  mr;
     }
+
+    public String Elementos()
+    {
+        String mr="";
+        mr=  name ;
+
+        return  mr;
+    }
+
 }
