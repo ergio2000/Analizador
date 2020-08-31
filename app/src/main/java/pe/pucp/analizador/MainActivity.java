@@ -30,6 +30,8 @@ import android.widget.ImageView;
 
 import java.io.File;
 
+import pe.pucp.analizador.ultimas.ultimasActivity;
+
 public class MainActivity extends AppCompatActivity {
 //region MANEJO DE CAMARA
     //codigo de respuesta
@@ -89,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
                 //acerca de
                 login();
                 return true;
+            case(R.id.action_ultimasfotos):
+                //acerca de
+                ultimas();
+                return true;
                 // Pass on any unhandled Menu Items to super.onOptionsItemSelected
                 // This is required to ensure that the up button and Fragment Menu Items
                 // are dispatched properly.
@@ -115,6 +121,19 @@ public class MainActivity extends AppCompatActivity {
         try{
             Intent myIntent = new Intent(this, LoginActivity.class);
             //startActivity(myIntent);
+
+        }catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    //ultimas fotos
+    private void ultimas()
+    {
+        try{
+            Intent myIntent = new Intent(this, ultimasActivity.class);
+            startActivity(myIntent);
 
         }catch (Exception e)
         {
