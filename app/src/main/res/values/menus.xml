@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="menu_home">Home</string>
+
+    <string name="menu_tomarfoto">Tomar foto</string>
+
+
+
+    <string name="menu_login">Login</string>
+
+
+    <string name="menu_ultimasfotos">Ultimas fotos</string>
+
+
+    <string name="menu_about">Acerca de</string>
+</resources>

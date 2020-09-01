@@ -28,6 +28,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.io.File;
 
 import pe.pucp.analizador.ultimas.ultimasActivity;
@@ -45,8 +48,10 @@ public class MainActivity extends AppCompatActivity {
     //ruta de imagen local
     String mRutaLocal="";
 
+    private String mLoginIdentificador="";
     private String mLoginUsuario="";
     private String mLoginEmail="";
+    private String mLoginTelefono="";
 
     //on create
     @Override
@@ -54,13 +59,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        pictureZone = (ImageView)findViewById(R.id.ivimgsel);
+        pictureZone = findViewById(R.id.ivimgsel);
 
         //verifica permisos de camara, y acceso a disco (camara/galeria)
         verificaPermisos();
 
     }
 
+    //on start
+    @Override
+    protected void onStart()
+    {
+        super.onStart();
+        //obtiene informacion del usuario
+        ObtieneUsuario();
+    }
 
     //soporte de menu superior
     @Override
@@ -120,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     {
         try{
             Intent myIntent = new Intent(this, LoginActivity.class);
-            //startActivity(myIntent);
+            startActivity(myIntent);
 
         }catch (Exception e)
         {
@@ -247,10 +260,42 @@ public class MainActivity extends AppCompatActivity {
         String[] PERMISSIONS = {Manifest.permission.CAMERA,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        ActivityCompat.requestPermissions((Activity) this, PERMISSIONS, permissionCode);
+        ActivityCompat.requestPermissions(this, PERMISSIONS, permissionCode);
     }
 
 //endregion
+
+    private void ObtieneUsuario()
+    {
+
+        //borra variables
+        mLoginIdentificador="";
+        mLoginEmail="";
+        mLoginUsuario="";
+        mLoginTelefono="";
+
+        //conecta a autenticacion
+        FirebaseAuth mAuth;
+        FirebaseUser currentUser;
+        try{
+            mAuth = FirebaseAuth.getInstance();
+            currentUser = mAuth.getCurrentUser();
+            if(currentUser!=null)
+            {
+                mLoginIdentificador  = currentUser.getUid();
+                mLoginEmail  = currentUser.getEmail();
+                mLoginUsuario = currentUser.getDisplayName();
+                mLoginTelefono = currentUser.getPhoneNumber();
+            }
+        } catch (Exception e){e.printStackTrace();}
+        ActualizarDatosUsuario();
+    }
+
+    private void ActualizarDatosUsuario()
+    {
+        Log.wtf("main activity","(identificador:"+mLoginIdentificador+") , (usuario:"+mLoginUsuario+") , (email:"+mLoginEmail+") , (telefono:"+mLoginTelefono+")\"");
+    }
+
 
     public void setLoginUsuario(String pU){mLoginUsuario=pU;  }
     public void setLoginEmail(String pE){mLoginEmail=pE;  }

@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -81,13 +83,33 @@ public class imagenModelFragment extends Fragment {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
 
+            //obtiene usuario logueado
+            String mUsuarioId=getString(R.string.firebaseRTDB_publico); //usuario publico
+            FirebaseAuth mAuth;
+            FirebaseUser currentUser;
+            try{
+                mAuth = FirebaseAuth.getInstance();
+                currentUser = mAuth.getCurrentUser();
+                if(currentUser!=null)
+                {
+                    mUsuarioId  = currentUser.getUid();
+                }
+            } catch (Exception e){e.printStackTrace();}
+
             //lista de base de datos
-            final List<imagenModel> list = new ArrayList<imagenModel>();
+            final List<imagenModel> list = new ArrayList<>();
 
             //obtiene lista de imagenes
             final FirebaseDatabase database = FirebaseDatabase.getInstance();
-            final DatabaseReference myRef = database.getReference( getString(R.string.firebaseRTDB_name));
-            myRef.limitToLast(20).addListenerForSingleValueEvent(
+            String filtroUsuario=getString(R.string.firebaseRTDB_name)+"//"+mUsuarioId;
+            final DatabaseReference myRef = database.getReference( filtroUsuario);
+            //implementa filtro de imagenes por usuario
+            //optimizacion de indice por UsuarioId adicionado en reglas de consola de FireBase
+            //ordenamiento por fecha de carga
+            //myRef.limitToLast(20).addListenerForSingleValueEvent(
+            //myRef.orderByChild("UsuarioId").equalTo(mUsuarioId).limitToLast(20).addListenerForSingleValueEvent(
+            //myRef.orderByChild("FechaCarga").equalTo(mUsuarioId).orderByChild("FechaCarga").limitToLast(20).addListenerForSingleValueEvent(
+            myRef.orderByChild("FechaCarga").limitToLast(20).addListenerForSingleValueEvent(
                     new ValueEventListener()
                     {
                         @Override
@@ -106,7 +128,6 @@ public class imagenModelFragment extends Fragment {
                             Log.wtf("lista2: ",list.toString() );
                             //recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(DummyContent.ITEMS));
                             recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(list));
-
                         }
 
                         @Override

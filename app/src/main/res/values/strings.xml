@@ -17,6 +17,22 @@
 
 
     <string name="firebaseRTDB_name">imagenes</string>
+    <string name="firebaseRTDB_publico">publico</string>
 
+    <string name="txtLoginTitulo">Usuario logueado</string>
+    <string name="txtLoginCerrarSesion">Cerrar Sesion</string>
+    <string name="txtLoginBorrarUsuario">Borrar Usuario</string>
+
+
+    <string name="txtvacio"></string>
+    <string name="txtvacio_resultado">resultado</string>
+    <string name="txtvacio_mensaje">mensaje</string>
+    <string name="mensajes_subiendoimagen">subiendo imagen</string>
+    <string name="mensajes_imagensubida">imagen subida</string>
+    <string name="mensajes_analizandoimagen">analizando imagen</string>
+    <string name="mensajes_detectandorostros">detectando rostros</string>
+    <string name="mensajes_consolidandoinformacion">consolidando informacion</string>
+    <string name="mensajes_almacenandoinformacion">almacenando informacion</string>
+    <string name="mensajes_resultados">resultados</string>
 
 </resources>

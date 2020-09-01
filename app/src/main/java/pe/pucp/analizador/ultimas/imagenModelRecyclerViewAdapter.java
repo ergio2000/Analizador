@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 
+import org.jetbrains.annotations.NotNull;
+
 import pe.pucp.analizador.R;
 import pe.pucp.analizador.imagenModel;
 import pe.pucp.analizador.ultimas.dummy.DummyContent.DummyItem;
@@ -30,6 +32,7 @@ public class imagenModelRecyclerViewAdapter extends RecyclerView.Adapter<imagenM
         mValues = items;
     }
 
+    @NotNull
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -47,7 +50,6 @@ public class imagenModelRecyclerViewAdapter extends RecyclerView.Adapter<imagenM
         holder.mElementosView.setText(mValues.get(position).Elementos());
 
         //imagen
-
         Glide.with(holder.image.getContext())
                 .load( holder.mItem.RutaRemota )
                 .error(R.drawable.ic_action_ultimasfotos)
@@ -73,13 +75,14 @@ public class imagenModelRecyclerViewAdapter extends RecyclerView.Adapter<imagenM
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = (TextView) view.findViewById(R.id.item_number);
-            mContentView = (TextView) view.findViewById(R.id.content);
-            mElementosView = (TextView) view.findViewById(R.id.elementos);
-            image = (ImageView) view.findViewById(R.id.imagen_foto);
+            mIdView = view.findViewById(R.id.item_number);
+            mContentView = view.findViewById(R.id.content);
+            mElementosView = view.findViewById(R.id.elementos);
+            image = view.findViewById(R.id.imagen_foto);
 
         }
 
+        @NotNull
         @Override
         public String toString() {
             return super.toString() + " '" + mContentView.getText() + "'";

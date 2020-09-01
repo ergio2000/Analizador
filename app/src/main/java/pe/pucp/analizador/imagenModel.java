@@ -1,11 +1,16 @@
 package pe.pucp.analizador;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 public class imagenModel {
     //propiedades
+    public String UsuarioId;
     public String Nombre; //uuid
     public String RutaLocal;
     public String RutaRemota;
@@ -19,44 +24,54 @@ public class imagenModel {
 
     public String Descripcion;
 
+    public String FechaCarga;//auxiliar que almacena la fecha de carga para ordenar imagenes
+
     //constructor
     public imagenModel()
     {
-        Nombre= UUID.randomUUID().toString();
+        UsuarioId="";//identificador de usuario
+        Nombre= UUID.randomUUID().toString();//identificadr de imagen
         RutaLocal="";
         RutaRemota="";
         Archivo="";
         numCaras=0;
-        Caras= new ArrayList<CaraModel>();
+        Caras= new ArrayList<>();
         numObjetos=0;
-        Objetos= new ArrayList<ObjetoModel>();
+        Objetos= new ArrayList<>();
         Descripcion="";
+        FechaCarga="";
     }
 
     //metodos
+    @NotNull
     public String toString()
     {
         //String mr="Nombre:" + Nombre + " - desc:"+ Descripcion + " - caras:"+String.valueOf(numCaras)+Caras.toString() + " - objetos:" + String.valueOf(numObjetos) +  Objetos.toString();
-        String mr="Descripcion:"+ Descripcion + " - caras:"+String.valueOf(numCaras)+Caras.toString() + " - objetos:" + String.valueOf(numObjetos) +  Objetos.toString();
-        return mr;
+        return "Descripcion:"+ Descripcion + " - caras:"+numCaras+Caras.toString() + " - objetos:" + numObjetos +  Objetos.toString();
     }
 
     //public String getDescripcion(){return Descripcion;}
 
     public String Elementos()
     {
-        String mCar ="";
+        StringBuilder mCar = new StringBuilder();
         for (CaraModel obj : Caras) {
-            mCar=mCar + "," + obj.Elementos();
+            mCar.append(",").append(obj.Elementos());
         }
 
-        String mObj ="";
+        StringBuilder mObj = new StringBuilder();
         for (ObjetoModel obj : Objetos) {
-            mObj=mObj + "," + obj.Elementos();
+            mObj.append(",").append(obj.Elementos());
         }
 
-        String mr="Caras:"+String.valueOf(numCaras)+ "(" + mCar + ") Objetos:" + String.valueOf(numObjetos) + "(" + mObj + ")";
-        return mr;
+        return "Caras:"+numCaras +"(" + mCar.toString() + ") Objetos:" + numObjetos + "(" + mObj + ")";
     }
 
+    //auxiliar de actualizacion de fecha
+    public void ActualizaFechaCarga()
+    {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+        Date hoy=new Date(); //fecha de hoy
+        FechaCarga = formatter.format(hoy);
+    }
 }

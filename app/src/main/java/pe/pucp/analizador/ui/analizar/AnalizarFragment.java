@@ -25,6 +25,8 @@ import android.widget.TextView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -41,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -88,9 +91,28 @@ public class AnalizarFragment extends Fragment {
 
         //recibe parametros
         Analizar miactividad = (Analizar) getActivity();
-        mImgMod.RutaLocal=miactividad.getRutaLocal();
+        if(miactividad!=null){mImgMod.RutaLocal=miactividad.getRutaLocal();}
         //Log.wtf("fragment analizar mRutaLocal",mRutaLocal);
 
+        //obtiene usuario logueado
+        mImgMod.UsuarioId=getString(R.string.firebaseRTDB_publico); //usuario publico
+        FirebaseAuth mAuth;
+        FirebaseUser currentUser;
+        try{
+            mAuth = FirebaseAuth.getInstance();
+            currentUser = mAuth.getCurrentUser();
+            if(currentUser!=null)
+            {
+                mImgMod.UsuarioId  = currentUser.getUid();
+            }
+
+        } catch (Exception e){e.printStackTrace();}
+
+        //calcula nombre de archivo local
+        String s= mImgMod.RutaLocal;
+        File f = new File(s);
+        s=f.getName();
+        mImgMod.Archivo=s;
 
 
         progressBar = root.findViewById(R.id.progress_bar);
@@ -105,7 +127,8 @@ public class AnalizarFragment extends Fragment {
         mStorageRef = FirebaseStorage.getInstance().getReference();
 
         //referencia a database
-        databaseReference = FirebaseDatabase.getInstance().getReference("imagenes");
+        String filtroUsuario=getString(R.string.firebaseRTDB_name)+"//"+mImgMod.UsuarioId;
+        databaseReference = FirebaseDatabase.getInstance().getReference(filtroUsuario);
 
         //analisis de informacion
         //1 solicita almacenamiento de imagen -20%
@@ -137,7 +160,7 @@ public class AnalizarFragment extends Fragment {
         progressBar.setVisibility(View.VISIBLE);
         progressBar.setMax(100);
         progressBar.setProgress(0);
-        txtprogressBar.setText("subiendo imagen");
+        txtprogressBar.setText(R.string.mensajes_subiendoimagen);
 
         //inicializa ruta remota
         pImgMod.RutaRemota="";
@@ -164,7 +187,7 @@ public class AnalizarFragment extends Fragment {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             progressBar.setProgress(100);
-                            txtprogressBar.setText("imagen subida");
+                            txtprogressBar.setText(R.string.mensajes_imagensubida);
 
                             Task<Uri> downUrl=taskSnapshot.getMetadata().getReference().getDownloadUrl();
                             while(!downUrl.isComplete());
@@ -192,7 +215,7 @@ public class AnalizarFragment extends Fragment {
     private void analizaImagen(final imagenModel pImgMod)
     {
         progressBar.setProgress(20);
-        txtprogressBar.setText("analizando imagen");
+        txtprogressBar.setText(R.string.mensajes_analizandoimagen);
 
         //crea tarea asincrona para manejo de consulta a servicio web REST
         AsyncTask.execute(new Runnable()
@@ -202,7 +225,7 @@ public class AnalizarFragment extends Fragment {
             {
                 // All your networking logic
                 // should be here
-                String texto="";
+                StringBuilder texto= new StringBuilder();
                 int caras=0;
 
                 try {
@@ -229,7 +252,7 @@ public class AnalizarFragment extends Fragment {
                     String jsonInputString = "{\"url\":\""+ pImgMod.RutaRemota+"\" }";
                     try(OutputStream os = myConnection.getOutputStream())
                     {
-                        byte[] input = jsonInputString.getBytes("utf-8");
+                        byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
                         os.write(input, 0, input.length);
                     }
                     //lee respuestas
@@ -242,7 +265,7 @@ public class AnalizarFragment extends Fragment {
                         InputStream responseBody = myConnection.getInputStream();
                         //formatea respuesta en formato texto utf-8, usual de REST
                         InputStreamReader responseBodyReader =
-                                new InputStreamReader(responseBody, "UTF-8");
+                                new InputStreamReader(responseBody, StandardCharsets.UTF_8);
                         //formatea respuesta en formato json
 
                         JsonReader jsonReader = new JsonReader(responseBodyReader);
@@ -252,123 +275,108 @@ public class AnalizarFragment extends Fragment {
                         while (jsonReader.hasNext()) { // Loop through all keys
                             String key = jsonReader.nextName(); // Fetch the next key
                             Log.wtf("nivel=","key " + key);
-                            if(key.equals("description"))
-                            {
-                                jsonReader.beginObject();
-                                while(jsonReader.hasNext())
-                                {
-                                    String key1 = jsonReader.nextName(); // Fetch the next key
-                                    Log.wtf("nivel=","key1 " + key1);
-                                    if(key1.equals("captions"))
-                                    {
-                                        jsonReader.beginArray();
-                                        while (jsonReader.hasNext())
-                                        {
-                                            jsonReader.beginObject();
-                                            while (jsonReader.hasNext())
-                                            {
-                                                String key2 = jsonReader.nextName(); // Fetch the next key
-                                                Log.wtf("array key ",key2);
-                                                if(key2.equals("text"))
-                                                {
-                                                    String texto1=jsonReader.nextString();
-                                                    //Log.wtf("texto1=",texto1);
-                                                    texto = texto + texto1;
-                                                }
-                                                else
-                                                    {
-                                                        jsonReader.skipValue();
-                                                    }
-                                            }
-                                            jsonReader.endObject();
-                                        }
-                                        jsonReader.endArray();
-                                    }
-                                    else
-                                        {
-                                            jsonReader.skipValue();
-                                        }
-                                }
-                                jsonReader.endObject();
-                            }
-                            else if(key.equals("faces"))
-                            {
-                                int f=0;
-                                jsonReader.beginArray();
-                                while (jsonReader.hasNext())
-                                {
-                                    f=f+1;
-                                    jsonReader.skipValue();
-                                }
-                                jsonReader.endArray();
-                                caras=f;
-                            }
-                            else if(key.equals("objects"))
-                            {
-                                int f=0;
-                                jsonReader.beginArray();
-                                while (jsonReader.hasNext())
-                                {
-                                    f=f+1;
-                                    ObjetoModel mObjMod= new ObjetoModel("");
-
+                            switch (key) {
+                                case "description":
                                     jsonReader.beginObject();
-                                    while (jsonReader.hasNext())
-                                    {
-                                        String key1=jsonReader.nextName();
-                                        Log.wtf("objects key:",key1);
-
-                                        switch (key1)
-                                        {
-                                            case"rectangle":
+                                    while (jsonReader.hasNext()) {
+                                        String key1 = jsonReader.nextName(); // Fetch the next key
+                                        Log.wtf("nivel=", "key1 " + key1);
+                                        if (key1.equals("captions")) {
+                                            jsonReader.beginArray();
+                                            while (jsonReader.hasNext()) {
                                                 jsonReader.beginObject();
-                                                while (jsonReader.hasNext())
-                                                {
-                                                    String key2 = jsonReader.nextName();
-                                                    Log.wtf("objecto rectangle ",key2);
-                                                    //lee valor
-                                                    int v = jsonReader.nextInt();
-                                                    Log.wtf("objecto rectangle pos",String.valueOf(v));
-                                                    //asigna valor
-                                                    switch (key2)
-                                                    {
-                                                        case "y":
-                                                            mObjMod.top=v;
-                                                            break;
-                                                        case "x":
-                                                            mObjMod.left=v;
-                                                            break;
-                                                        case "w":
-                                                            mObjMod.width=v;
-                                                            break;
-                                                        case "h":
-                                                            mObjMod.height=v;
-                                                            break;
+                                                while (jsonReader.hasNext()) {
+                                                    String key2 = jsonReader.nextName(); // Fetch the next key
+                                                    Log.wtf("array key ", key2);
+                                                    if (key2.equals("text")) {
+                                                        String texto1 = jsonReader.nextString();
+                                                        //Log.wtf("texto1=",texto1);
+                                                        texto.append(texto1);
+                                                    } else {
+                                                        jsonReader.skipValue();
                                                     }
                                                 }
                                                 jsonReader.endObject();
-                                                break;
-                                            case"object":
-                                                mObjMod.name=jsonReader.nextString();
-                                                break;
-                                            default:
-                                                jsonReader.skipValue();
+                                            }
+                                            jsonReader.endArray();
+                                        } else {
+                                            jsonReader.skipValue();
+                                        }
+                                    }
+                                    jsonReader.endObject();
+                                    break;
+                                case "faces": {
+                                    int f = 0;
+                                    jsonReader.beginArray();
+                                    while (jsonReader.hasNext()) {
+                                        f = f + 1;
+                                        jsonReader.skipValue();
+                                    }
+                                    jsonReader.endArray();
+                                    caras = f;
+                                    break;
+                                }
+                                case "objects": {
+                                    int f = 0;
+                                    jsonReader.beginArray();
+                                    while (jsonReader.hasNext()) {
+                                        f = f + 1;
+                                        ObjetoModel mObjMod = new ObjetoModel("");
+
+                                        jsonReader.beginObject();
+                                        while (jsonReader.hasNext()) {
+                                            String key1 = jsonReader.nextName();
+                                            Log.wtf("objects key:", key1);
+
+                                            switch (key1) {
+                                                case "rectangle":
+                                                    jsonReader.beginObject();
+                                                    while (jsonReader.hasNext()) {
+                                                        String key2 = jsonReader.nextName();
+                                                        Log.wtf("objecto rectangle ", key2);
+                                                        //lee valor
+                                                        int v = jsonReader.nextInt();
+                                                        Log.wtf("objecto rectangle pos", String.valueOf(v));
+                                                        //asigna valor
+                                                        switch (key2) {
+                                                            case "y":
+                                                                mObjMod.top = v;
+                                                                break;
+                                                            case "x":
+                                                                mObjMod.left = v;
+                                                                break;
+                                                            case "w":
+                                                                mObjMod.width = v;
+                                                                break;
+                                                            case "h":
+                                                                mObjMod.height = v;
+                                                                break;
+                                                        }
+                                                    }
+                                                    jsonReader.endObject();
+                                                    break;
+                                                case "object":
+                                                    mObjMod.name = jsonReader.nextString();
+                                                    break;
+                                                default:
+                                                    jsonReader.skipValue();
+                                            }
+
                                         }
 
+                                        jsonReader.endObject();
+
+                                        pImgMod.Objetos.add(mObjMod);
                                     }
+                                    jsonReader.endArray();
 
-                                    jsonReader.endObject();
-
-                                    pImgMod.Objetos.add(mObjMod);
+                                    pImgMod.numObjetos = f;
+                                    break;
                                 }
-                                jsonReader.endArray();
-
-                                pImgMod.numObjetos=f;
-                            }
-                            else
-                                {
+                                default:
                                     jsonReader.skipValue();
-                                }
+                                    break;
+                            }
                         }
                         jsonReader.endObject();
                         //cierra json reader
@@ -382,7 +390,7 @@ public class AnalizarFragment extends Fragment {
                         Log.e("error response code:", String.valueOf( myConnection.getResponseCode() ) );
                     }
 
-                    Log.wtf("texto=",texto);
+                    Log.wtf("texto=", texto.toString());
                     Log.wtf("caras=",String.valueOf(caras) );
                 }
                 catch (Exception e) {
@@ -391,7 +399,7 @@ public class AnalizarFragment extends Fragment {
 
                 //devuelve valores
                 pImgMod.numCaras=caras;
-                pImgMod.Descripcion=texto;
+                pImgMod.Descripcion= texto.toString();
 
                 //siguiente etapa
                 rostrosImagen(pImgMod);
@@ -409,7 +417,7 @@ public class AnalizarFragment extends Fragment {
             @Override
             public void run() {
                 progressBar.setProgress(40);
-                txtprogressBar.setText("detectando rostros");
+                txtprogressBar.setText(R.string.mensajes_detectandorostros);
             }
         });
 
@@ -452,7 +460,7 @@ public class AnalizarFragment extends Fragment {
                         String jsonInputString = "{\"url\":\""+ pImgMod.RutaRemota+"\" }";
                         try(OutputStream os = myConnection.getOutputStream())
                         {
-                            byte[] input = jsonInputString.getBytes("utf-8");
+                            byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
                             os.write(input, 0, input.length);
                         }
                         //lee respuestas
@@ -465,7 +473,7 @@ public class AnalizarFragment extends Fragment {
                             InputStream responseBody = myConnection.getInputStream();
                             //formatea respuesta en formato texto utf-8, usual de REST
                             InputStreamReader responseBodyReader =
-                                    new InputStreamReader(responseBody, "UTF-8");
+                                    new InputStreamReader(responseBody, StandardCharsets.UTF_8);
                             //formatea respuesta en formato json
 
                             JsonReader jsonReader = new JsonReader(responseBodyReader);
@@ -614,36 +622,34 @@ public class AnalizarFragment extends Fragment {
             @Override
             public void run() {
                 progressBar.setProgress(60);
-                txtprogressBar.setText("consolidando informacion");
+                txtprogressBar.setText(R.string.mensajes_consolidandoinformacion);
             }
         });
 
         //con el nuevo modelo de datos la informacion ya esta consolidada
-        //calcula nombre de archivo local
-        String s= pImgMod.RutaLocal;
-        File f = new File(s);
-        s=f.getName();
-        pImgMod.Archivo=s;
 
         Log.wtf("consolida informacion","1");
 
         //siguiente etapa
-        almacenaInformación(pImgMod);
+        almacenaInformacion(pImgMod);
     }
 
     //almacenamiento en base de datos
-    private void almacenaInformación(final imagenModel pImgMod)
+    private void almacenaInformacion(final imagenModel pImgMod)
     {
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 progressBar.setProgress(80);
-                txtprogressBar.setText("almacenando informacion");
+                txtprogressBar.setText(R.string.mensajes_almacenandoinformacion);
             }
         });
 
 
         Log.wtf("almacena informacion","1");
+
+        //actualiza fecha
+        pImgMod.ActualizaFechaCarga();
 
         //almacena
         databaseReference.child(pImgMod.Nombre).setValue(pImgMod);
@@ -660,7 +666,7 @@ public class AnalizarFragment extends Fragment {
             @Override
             public void run() {
                 progressBar.setProgress(100);
-                txtprogressBar.setText("resultados");
+                txtprogressBar.setText(R.string.mensajes_resultados);
 
                 Bitmap mImg = BitmapFactory.decodeFile(pImgMod.RutaLocal);
                 //And show the result in the image view.

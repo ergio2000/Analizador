@@ -1,9 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".LoginActivity">
+<!-- <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android" -->
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_marginLeft="8dp"
+    android:layout_marginRight="8dp"
+    android:layout_marginTop="64dp"
+
+    android:theme="@style/Theme.MaterialComponents.Light"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".LoginActivity"
+    app:cardElevation="8dp">
+
+    <LinearLayout
+        android:id="@+id/basket_products_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/imagen_login"
+            android:layout_width="100dp"
+            android:layout_height="150dp"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/txtvacio"
+            android:src="@drawable/ic_action_login"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="6dp">
+
+            <TextView
+                android:id="@+id/txtLogTit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/txtLoginTitulo"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+            <TextView
+                android:id="@+id/txtLogUsr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnlogcerses"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fadingEdge="horizontal|vertical"
+                android:layout_marginTop="5dp"
+                android:text="@string/txtLoginCerrarSesion" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnlogborusu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:fadingEdge="horizontal|vertical"
+                android:layout_marginTop="15dp"
+                android:text="@string/txtLoginBorrarUsuario" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
+
+<!-- </androidx.constraintlayout.widget.ConstraintLayout> -->
