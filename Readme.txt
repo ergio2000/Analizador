@@ -1,1 +1,1 @@
-El presente documento explica la creación de una aplicación Android que permite obtener información de una imagen proporcionada por el usuario usando inteligencia artificial (servicios cognitivos).
+El documento Analisis.docx explica la creación de una aplicación Android que permite obtener información de una imagen proporcionada por el usuario usando inteligencia artificial (servicios cognitivos).

@@ -20,7 +20,6 @@
         <activity
             android:name=".MainActivity"
             android:icon="@drawable/ic_user_public"
-            android:theme="@style/AppTheme.Custom"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
