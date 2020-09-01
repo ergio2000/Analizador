@@ -13,7 +13,7 @@ import com.bumptech.glide.Glide;
 import org.jetbrains.annotations.NotNull;
 
 import pe.pucp.analizador.R;
-import pe.pucp.analizador.imagenModel;
+import pe.pucp.analizador.objetos.imagenModel;
 import pe.pucp.analizador.ultimas.dummy.DummyContent.DummyItem;
 
 import java.util.List;

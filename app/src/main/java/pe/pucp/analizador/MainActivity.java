@@ -1,6 +1,7 @@
 package pe.pucp.analizador;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.ActionMenuView;
 import androidx.core.app.ActivityCompat;
@@ -208,31 +209,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private Bitmap handleResultFromCameraini(Intent data){
-        Bitmap takenPictureData = null;
-        //Log.wtf("handleResultFromCamera","inicio");
-
-        if(data!=null){
-            //Android sets the picture in extra data.
-            Bundle extras = data.getExtras();
-            if(extras!=null && extras.get("data")!=null){
-                takenPictureData = (Bitmap) extras.get("data");
-            }
-        }else{
-            //If we used EXTRA_OUTPUT we do not have the data so we get the image
-            //from the output.
-            try{
-                //takenPictureData = ToolBox.media_getBitmapFromFile(outFile);
-                String na=outFile.getPath();
-                //Log.wtf("na",na);
-                takenPictureData = BitmapFactory.decodeFile(na);
-            }catch(Exception e){
-                e.printStackTrace();
-            }
-        }
-        return takenPictureData;
-    }
-
     private String handleResultFromCamera(Intent data){
         String mRutaLocal="";
         //Log.wtf("handleResultFromCamera","inicio");
@@ -294,9 +270,48 @@ public class MainActivity extends AppCompatActivity {
     private void ActualizarDatosUsuario()
     {
         Log.wtf("main activity","(identificador:"+mLoginIdentificador+") , (usuario:"+mLoginUsuario+") , (email:"+mLoginEmail+") , (telefono:"+mLoginTelefono+")\"");
+        ActualizaIconoLoggin();
     }
 
 
     public void setLoginUsuario(String pU){mLoginUsuario=pU;  }
     public void setLoginEmail(String pE){mLoginEmail=pE;  }
+
+//region actualizacion de icono segun usuario publico/loggeado
+    private void ActualizaIconoLoggin()
+    {
+        Log.wtf("MainActivity","ActualizaIconoLoggin");
+        boolean mUsu=false; //inicializa falso , no autenticado, publico
+        //conecta a autenticacion
+        FirebaseAuth mAuth;
+        FirebaseUser currentUser;
+        try{
+            mAuth = FirebaseAuth.getInstance();
+            currentUser = mAuth.getCurrentUser();
+            if(currentUser!=null)
+            {
+                mUsu=true;
+            }
+        } catch (Exception e){e.printStackTrace();}
+
+        try
+        {
+            ActionBar actionBar = getSupportActionBar();
+            if(mUsu==true)
+            {
+                actionBar.setIcon(R.drawable.ic_user_logged);
+                //actionBar.setTitle("logeado");
+                actionBar.setDisplayShowHomeEnabled(true);
+            }
+            else
+            {
+                actionBar.setIcon(R.drawable.ic_user_public);
+                //actionBar.setTitle("publico");
+                actionBar.setDisplayShowHomeEnabled(true);
+            }
+        }catch (Exception e){e.printStackTrace();}
+
+
+    }
+//endregion
 }

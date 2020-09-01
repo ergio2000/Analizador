@@ -19,18 +19,13 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import pe.pucp.analizador.R;
-import pe.pucp.analizador.imagenModel;
-import pe.pucp.analizador.ultimas.dummy.DummyContent;
+import pe.pucp.analizador.objetos.imagenModel;
 
 /**
  * A fragment representing a list of Items.
@@ -121,11 +116,13 @@ public class imagenModelFragment extends Fragment {
                                 for (DataSnapshot child: snapshot.getChildren()) {
                                     list.add(child.getValue(imagenModel.class));
                                 }
-                                Log.wtf("lista1: ",list.toString() );
+                                //Log.wtf("lista1: ",list.toString() );
+                                Log.wtf("lista1: cantidad:", String.valueOf(list.size() ) );
                             }catch (Exception e){e.printStackTrace();}
 
                             //establece adaptador
-                            Log.wtf("lista2: ",list.toString() );
+                            //Log.wtf("lista2: ",list.toString() );
+                            Log.wtf("lista2: cantidad:", String.valueOf(list.size() ) );
                             //recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(DummyContent.ITEMS));
                             recyclerView.setAdapter(new imagenModelRecyclerViewAdapter(list));
                         }

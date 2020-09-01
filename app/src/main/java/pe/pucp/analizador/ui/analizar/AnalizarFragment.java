@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.util.JsonReader;
-import android.util.JsonToken;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,24 +33,20 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.json.JSONObject;
-
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import pe.pucp.analizador.Analizar;
-import pe.pucp.analizador.CaraModel;
-import pe.pucp.analizador.ObjetoModel;
+import pe.pucp.analizador.AnalizarActivity;
+import pe.pucp.analizador.objetos.CaraModel;
+import pe.pucp.analizador.objetos.ObjetoModel;
 import pe.pucp.analizador.R;
-import pe.pucp.analizador.imagenModel;
+import pe.pucp.analizador.objetos.imagenModel;
 
 public class AnalizarFragment extends Fragment {
 
@@ -81,7 +76,7 @@ public class AnalizarFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View root= inflater.inflate(R.layout.main_fragment, container, false);
+        View root= inflater.inflate(R.layout.fragment_analizar, container, false);
 
         //Log.wtf("fragment analizar","ini");
 
@@ -90,7 +85,7 @@ public class AnalizarFragment extends Fragment {
 
 
         //recibe parametros
-        Analizar miactividad = (Analizar) getActivity();
+        AnalizarActivity miactividad = (AnalizarActivity) getActivity();
         if(miactividad!=null){mImgMod.RutaLocal=miactividad.getRutaLocal();}
         //Log.wtf("fragment analizar mRutaLocal",mRutaLocal);
 
@@ -261,6 +256,8 @@ public class AnalizarFragment extends Fragment {
                         // Further processing here
                         progressBar.setProgress(25);
 
+                        Log.wtf("analizaImagen","en response");
+
                         //lee respuesta en forma binaria
                         InputStream responseBody = myConnection.getInputStream();
                         //formatea respuesta en formato texto utf-8, usual de REST
@@ -269,25 +266,25 @@ public class AnalizarFragment extends Fragment {
                         //formatea respuesta en formato json
 
                         JsonReader jsonReader = new JsonReader(responseBodyReader);
-                        Log.wtf("nivel=","response");
+                        //Log.wtf("nivel=","response");
                         //obtiene un elemento del json recibido
                         jsonReader.beginObject(); // Start processing the JSON object
                         while (jsonReader.hasNext()) { // Loop through all keys
                             String key = jsonReader.nextName(); // Fetch the next key
-                            Log.wtf("nivel=","key " + key);
+                            //Log.wtf("nivel=","key " + key);
                             switch (key) {
                                 case "description":
                                     jsonReader.beginObject();
                                     while (jsonReader.hasNext()) {
                                         String key1 = jsonReader.nextName(); // Fetch the next key
-                                        Log.wtf("nivel=", "key1 " + key1);
+                                        //Log.wtf("nivel=", "key1 " + key1);
                                         if (key1.equals("captions")) {
                                             jsonReader.beginArray();
                                             while (jsonReader.hasNext()) {
                                                 jsonReader.beginObject();
                                                 while (jsonReader.hasNext()) {
                                                     String key2 = jsonReader.nextName(); // Fetch the next key
-                                                    Log.wtf("array key ", key2);
+                                                    //Log.wtf("array key ", key2);
                                                     if (key2.equals("text")) {
                                                         String texto1 = jsonReader.nextString();
                                                         //Log.wtf("texto1=",texto1);
@@ -326,17 +323,17 @@ public class AnalizarFragment extends Fragment {
                                         jsonReader.beginObject();
                                         while (jsonReader.hasNext()) {
                                             String key1 = jsonReader.nextName();
-                                            Log.wtf("objects key:", key1);
+                                            //Log.wtf("objects key:", key1);
 
                                             switch (key1) {
                                                 case "rectangle":
                                                     jsonReader.beginObject();
                                                     while (jsonReader.hasNext()) {
                                                         String key2 = jsonReader.nextName();
-                                                        Log.wtf("objecto rectangle ", key2);
+                                                        //Log.wtf("objecto rectangle ", key2);
                                                         //lee valor
                                                         int v = jsonReader.nextInt();
-                                                        Log.wtf("objecto rectangle pos", String.valueOf(v));
+                                                        //Log.wtf("objecto rectangle pos", String.valueOf(v));
                                                         //asigna valor
                                                         switch (key2) {
                                                             case "y":
@@ -469,6 +466,8 @@ public class AnalizarFragment extends Fragment {
                             // Further processing here
                             progressBar.setProgress(25);
 
+                            Log.wtf("rostrosImagen","en response");
+
                             //lee respuesta en forma binaria
                             InputStream responseBody = myConnection.getInputStream();
                             //formatea respuesta en formato texto utf-8, usual de REST
@@ -488,14 +487,14 @@ public class AnalizarFragment extends Fragment {
                                 while (jsonReader.hasNext())
                                 {
                                     String key = jsonReader.nextName();
-                                    Log.wtf("cara",key);
+                                    //Log.wtf("cara",key);
                                     if(key.equals("faceRectangle"))
                                     {
                                         jsonReader.beginObject();
                                         while (jsonReader.hasNext())
                                         {
                                             String key1 = jsonReader.nextName();
-                                            Log.wtf("cara rectangle ",key1);
+                                            //Log.wtf("cara rectangle ",key1);
                                             //lee valor
                                             int v = jsonReader.nextInt();
                                             //asigna valor
@@ -525,7 +524,7 @@ public class AnalizarFragment extends Fragment {
                                         while (jsonReader.hasNext())
                                         {
                                             String key1 = jsonReader.nextName();
-                                            Log.wtf("cara atributes ",key1);
+                                            //Log.wtf("cara atributes ",key1);
 
                                             //asigna valor
                                             switch (key1)
@@ -545,7 +544,7 @@ public class AnalizarFragment extends Fragment {
                                                     while (jsonReader.hasNext())
                                                     {
                                                         String key2=jsonReader.nextName();
-                                                        Log.wtf("cara atributes emotion",key2);
+                                                        //Log.wtf("cara atributes emotion",key2);
 
                                                         d1=jsonReader.nextDouble();
                                                         //evalua maximo
@@ -587,18 +586,15 @@ public class AnalizarFragment extends Fragment {
                             //cierra conexion a servicio web
                             myConnection.disconnect();
 
-
                         } else {
                             // Error handling code goes here
                             Log.e("error response code:", String.valueOf( myConnection.getResponseCode() ) );
                         }
 
-
                     }
                     catch (Exception e) {
                         e.printStackTrace();
                     }
-
 
                     //siguiente etapa
                     consolidaInformacion(pImgMod);

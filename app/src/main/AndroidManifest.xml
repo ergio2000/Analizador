@@ -15,22 +15,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ultimas.ultimasActivity"></activity>
-        <activity android:name=".LoginActivity" />
-        <activity android:name=".AboutActivity" />
-        <activity
-            android:name=".Analizar"
-            android:windowSoftInputMode="adjustResize" />
+
+        <!-- activities -->
         <activity
             android:name=".MainActivity"
+            android:icon="@drawable/ic_user_public"
             android:theme="@style/AppTheme.Custom"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ultimas.ultimasActivity"
+            android:icon="@drawable/ic_user_public"></activity>
+        <activity android:name=".LoginActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:icon="@drawable/ic_user_public"/>
+        <activity
+            android:name=".AnalizarActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:icon="@drawable/ic_user_public"/>
+        <activity android:name=".AboutActivity"
+            android:icon="@drawable/ic_user_public"
+           />
+
     </application>
 
 </manifest>
